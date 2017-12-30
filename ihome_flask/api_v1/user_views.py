@@ -1,5 +1,5 @@
 # coding=utf-8
-from flask import Blueprint,session,make_response,jsonify, request
+from flask import Blueprint,session,make_response,jsonify, request,current_app
 user_blueprint=Blueprint('user', __name__)
 
 from captcha.captcha import captcha
@@ -9,6 +9,7 @@ import re
 from models import User
 import random
 import logging
+from qiniu import put_file,Auth
 
 
 @user_blueprint.route('/yzm')
@@ -91,6 +92,45 @@ def user_my():
     # 档查当前用户的头像,用户名,手机号,并返回
     user=User.query.get(user_id)
     return jsonify(user=user.to_basic_dict())
+
+@user_blueprint.route('/', methods=['PUT'])
+def user_profile():
+    dict = request.form
+    if 'avatar1' in dict:
+        try:
+        # 获取头像
+            f1 = request.files['avatar_url']
+            # if not re.match('image/.*',f1.mimetype):
+            #     return jsonify(code=RET.PARAMERR)
+        except:
+            return jsonify(code=RET.PARAMERR)
+        # 上传到七牛云
+        # 需要填写你的 Access Key 和 Secret Key
+        access_key = '0mUz_taFmgf8MQFXNKfZ5oCIDbjMYAnN-yV0jlNt'
+        secret_key = 'ZVRRJFhJmG_n3Hrjuxqz03g20AwyWntODDhZ0SHP'
+        # 构建鉴权对象
+        try:
+            q = Auth(access_key, secret_key)
+            # 要上传的空间
+            bucket_name = 'zhangshuyang'
+            # 生成上传 Token，可以指定过期时间等
+            token = q.upload_token(bucket_name)
+            # 要上传文件数据,ret是字典,键为hash,key,值为新文件名,info是response对象
+            ret, info = put_file(token, None, f1.read())
+        except:
+            logging.ERROR("访问七牛云出错")
+            return jsonify(code=RET.SERVERERR)
+        # 如果未出错,保存用户的头像信息
+        user = User.query.get(session['user_id'])
+        user.avatar_url = ret.get('key')
+        user.add_update()
+        # 返回图片信息
+        return jsonify(code=RET.OK,url=current_app.config['QINIU_URL'] + ret.get('key'))
+    elif 'name' in dict:
+        # 上传用户名
+        pass
+    else:
+        pass
 
 @user_blueprint.route('/session', methods=['POST'])
 def user_login():

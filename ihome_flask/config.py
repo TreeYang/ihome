@@ -17,6 +17,8 @@ class Config:
     SESSION_REDIS = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     PERMANENT_SESSION_LIFETIME = 60*60*24*14#秒
 
+    # 七牛云的访问服务器
+    QINIU_URL='http://p1r92g1bh.bkt.clouddn.com'
 
 class DevelopConfig(Config):
     DEBUG = True

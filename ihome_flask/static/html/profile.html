@@ -29,10 +29,12 @@
                     <div class="menu-content">
                         <img id="user-avatar" src="">
                         <div class="menu-text">
-                            <form id="form-avatar" action="/api/profile/avatar" method="post" enctype="multipart/form-data">
+                            <form id="form-avatar" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="avatar1">
                                 选择头像：<input type="file" accept="image/*" name="avatar">
                                 <input type="submit" class="btn btn-success" value="上传">
                             </form>
+                            <div id="error-msg1" class="error-msg"><i class="fa fa-exclamation-circle"></i>头像上传失败，请重新上传</div>
                         </div> 
                     </div>
                 </li>
@@ -41,11 +43,13 @@
                         <h3>用户名</h3>
                     </div>
                     <div class="menu-content">
-                        <form id="form-name" action="/api/profile/name" method="post">
+                        <form id="form-name"  method="post">
                             <input type="text" name="name" id="user-name">
                             <input type="submit" class="btn btn-success" value="保存">
+
                         </form>
-                        <div class="error-msg"><i class="fa fa-exclamation-circle"></i>用户名已存在，请重新设置</div>
+                        <div id="error-msg2" class="error-msg"><i class="fa fa-exclamation-circle"></i>用户名已存在，请重新设置</div>
+
                     </div>
                 </li>
             </ul>
@@ -67,6 +71,7 @@
     <script src="/static/plugins/bootstrap/js/bootstrap.min.js"></script>
     <script src="/static/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
     <script src="/static/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+    <script src="/static/js/ihome/status_code.js"></script>
     <script src="/static/js/ihome/profile.js"></script>
 </body>
 </html>
