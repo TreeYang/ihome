@@ -26,7 +26,9 @@ $(document).ready(function() {
             return;
         }
         // 提交
-        $.post('/api/v1/user/session', $(this).serialize(),function(data){
+        $.post('/api/v1/user/session?token='+TOKEN,
+            $(this).serialize(),
+            function(data){
             if(data.code==RET.OK){
                 location.href='my.html';
             }else{

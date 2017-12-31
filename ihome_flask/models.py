@@ -50,4 +50,10 @@ class User(BaseModel, db.Model):
             'phone':self.phone,
         }
 
+    def to_auth_dict(self):
+        return {
+            'id_name':self.id_name,
+            'id_cart':self.id_card,
+        }
+
 

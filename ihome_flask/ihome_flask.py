@@ -31,6 +31,15 @@ app.register_blueprint(house_blueprint,url_prefix='/api/v1/house')
 from api_v1.order_views import order_blueprint
 app.register_blueprint(order_blueprint,url_prefix='/api/v1/order')
 
+# 钩子,是否包含token
+# from flask import request,jsonify,current_app
+# from status_code import *
+# @app.before_request
+# def check_token():
+#     if request.path.startswith('/api'):
+#         if 'token' not in request.args or request.args.get('token')!=current_app.config['TOKEN']:
+#             return jsonify(RET.REQERR)
+
 if __name__ == '__main__':
     manager.run()
 

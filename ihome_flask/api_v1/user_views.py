@@ -10,7 +10,7 @@ from models import User
 import random
 import logging
 from qiniu import put_data,Auth
-
+from my_decorator import is_login
 
 @user_blueprint.route('/yzm')
 def yzm():
@@ -85,6 +85,7 @@ def user_register():
         logging.ERROR(u'用户注册更新数据库失败,手机号:%s,密码:%s' % (mobile,password))
         return jsonify(code=RET.DBERR, msg=ret_map[RET.DBERR])
 
+@is_login
 @user_blueprint.route('/', methods=['GET'])
 def user_my():
     # 获取当前登陆的用户
@@ -93,6 +94,7 @@ def user_my():
     user=User.query.get(user_id)
     return jsonify(user=user.to_basic_dict())
 
+@is_login
 @user_blueprint.route('/', methods=['PUT'])
 def user_profile():
     dict = request.form
@@ -142,6 +144,16 @@ def user_profile():
     else:
         return jsonify(code=RET.PARAMERR, msg=ret_map[RET.PARAMERR])
 
+@is_login
+@user_blueprint.route('/auth', methods=['GET'])
+def user_auth():
+    # 获取当前登陆用户的编号
+    user_id=session['user_id']
+    # 根据编号查询当前用户
+    user=User.query.get(user_id)
+    # 返回用户的真是姓名,身份证号
+    return jsonify(user.to_auth_dict())
+
 @user_blueprint.route('/session', methods=['POST'])
 def user_login():
     # 接收参数
@@ -171,6 +183,36 @@ def user_login():
             return jsonify(code=RET.PARAMERR, msg=u'密码不正确')
     else:
         return jsonify(code=RET.PARAMERR, msg=u'手机号不存在')
+
+@is_login
+@user_blueprint.route('/auth', methods=['PUT'])
+def user_auth_set():
+    # 接收参数
+    dict = request.form
+    id_name=dict.get('id_name')
+    id_card=dict.get('id_card')
+    # 验证参数有效性
+    if not all([id_name,id_card]):
+        return jsonify(code=RET.PARAMERR, msg=ret_map[RET.PARAMERR])
+    # 公安部证明姓名存在重复,所以不需要验证是否存在
+    if not re.match(r'^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$',id_card):
+        return jsonify(code=RET.PARAMERR, msg=ret_map[RET.PARAMERR])
+    # 修改数据对象
+    try:
+        user = User.query.get(session['user_id'])
+    except:
+        logging.ERROR(u'查询用户失败')
+        return jsonify(code=RET.DATAEXIST)
+    try:
+        user.id_name=id_name
+        user.id_card=id_card
+        user.add_update()
+    except:
+        logging.ERROR(u'修改用户姓名失败')
+        return jsonify(code=RET.DBERR)
+    # 返回数据
+    return jsonify(code=RET.OK)
+
 
 @user_blueprint.route('/session', methods=['GET'])
 def user_is_login():

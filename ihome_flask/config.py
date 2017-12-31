@@ -1,5 +1,7 @@
 # coding=utf-8
 import redis
+import hashlib
+
 class Config:
     DEBUG=False
     SQLALCHEMY_DATABASE_URI='mysql://root:mysql@127.0.0.1:3306/ihome'
@@ -19,6 +21,9 @@ class Config:
 
     # 七牛云的访问服务器
     QINIU_URL='http://p1r92g1bh.bkt.clouddn.com'
+
+    # 生成token,权限信息
+    TOKEN=hashlib.md5('ihome').hexdigest()
 
 class DevelopConfig(Config):
     DEBUG = True

@@ -6,3 +6,31 @@ function showSuccessMsg() {
     });
 }
 
+$.get('/api/v1/user/auth',function(data){
+    $('#real-name').val(data.id_name);
+    $('#id-card').val(data.id_cart);
+    if(data.id_name!=null){
+        $('.btn-success').hide()
+    }
+});
+
+$('#form-auth').submit(function(){
+    $.ajax({
+        url: '/api/v1/user/auth',
+        type: 'put',
+        data: {
+            id_name: $('#real-name').val(),
+            id_card: $('#id-card').val(),
+        },
+        success:function(data){
+            if(data.code==RET.OK){
+                $('.btn-success').hide();
+                showSuccessMsg()
+            }else{
+                $('.error-msg').show().find('span').html(ret_map[RET.PARAMERR]);
+            }
+        }
+    })
+    return false;
+})
+
