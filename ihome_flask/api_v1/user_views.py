@@ -9,7 +9,7 @@ import re
 from models import User
 import random
 import logging
-from qiniu import put_file,Auth
+from qiniu import put_data,Auth
 
 
 @user_blueprint.route('/yzm')
@@ -99,24 +99,26 @@ def user_profile():
     if 'avatar1' in dict:
         try:
         # 获取头像
-            f1 = request.files['avatar_url']
-            # if not re.match('image/.*',f1.mimetype):
-            #     return jsonify(code=RET.PARAMERR)
+            f1 = request.files['avatar']
+            # mime-type:国际规范,表示文件的类型,如text/html,text/xml,image/png,image/jpeg..
+            if not re.match('image/.*',f1.mimetype):
+                return jsonify(code=RET.PARAMERR)
         except:
             return jsonify(code=RET.PARAMERR)
         # 上传到七牛云
         # 需要填写你的 Access Key 和 Secret Key
         access_key = '0mUz_taFmgf8MQFXNKfZ5oCIDbjMYAnN-yV0jlNt'
         secret_key = 'ZVRRJFhJmG_n3Hrjuxqz03g20AwyWntODDhZ0SHP'
+        # 要上传的空间
+        bucket_name = 'zhangshuyang'
         # 构建鉴权对象
         try:
             q = Auth(access_key, secret_key)
-            # 要上传的空间
-            bucket_name = 'zhangshuyang'
+
             # 生成上传 Token，可以指定过期时间等
             token = q.upload_token(bucket_name)
             # 要上传文件数据,ret是字典,键为hash,key,值为新文件名,info是response对象
-            ret, info = put_file(token, None, f1.read())
+            ret, info = put_data(token, None, f1.read())
         except:
             logging.ERROR("访问七牛云出错")
             return jsonify(code=RET.SERVERERR)
@@ -125,12 +127,20 @@ def user_profile():
         user.avatar_url = ret.get('key')
         user.add_update()
         # 返回图片信息
-        return jsonify(code=RET.OK,url=current_app.config['QINIU_URL'] + ret.get('key'))
+        return jsonify(code=RET.OK, url=current_app.config['QINIU_URL'] + ret.get('key'))
     elif 'name' in dict:
         # 上传用户名
-        pass
+        name=dict.get('name')
+        # 判断用户名是否存在
+        if User.query.filter_by(name=name).count():
+            return jsonify(code=RET.DATAEXIST)
+        else:
+            user=User.query.get(session['user_id'])
+            user.name=name
+            user.add_update()
+            return jsonify(code=RET.OK)
     else:
-        pass
+        return jsonify(code=RET.PARAMERR, msg=ret_map[RET.PARAMERR])
 
 @user_blueprint.route('/session', methods=['POST'])
 def user_login():
