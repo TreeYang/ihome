@@ -2,6 +2,8 @@
 from flask import Flask
 from werkzeug.routing import BaseConverter
 import os
+from redis import StrictRedis
+from flask_session import Session
 
 BASE_DIR=os.path.dirname(os.path.abspath(__file__))
 
@@ -13,6 +15,13 @@ def create_app(config):
     app=Flask(__name__)
     app.config.from_object(config)
     app.url_map.converters['html']=HTMLConverter
+
+    # session初始化,将session存储在redis中
+    Session(app)
+
+    # 创建redis存储对象
+    redis_store=StrictRedis(host=config.REDIS_HOST, port=config.REDIS_PORT)
+    app.redis=redis_store
 
     # 日志处理
     import logging

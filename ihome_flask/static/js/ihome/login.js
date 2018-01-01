@@ -32,7 +32,7 @@ $(document).ready(function() {
             if(data.code==RET.OK){
                 location.href='my.html';
             }else{
-                $('$result-err').show().find('span').html(data.msg);
+                $('#result-err').show().find('span').html(data.msg);
             }
         })
     });

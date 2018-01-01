@@ -170,7 +170,7 @@ def user_login():
     try:
         user=User.query.filter_by(phone=mobile).first()
     except:
-        logging.ERROR('用户登陆--数据库出错')
+        # logging.ERROR(u'数据库出错')
         return jsonify(code=RET.PARAMERR, msg=ret_map[RET.PARAMERR])
 
     # 判断手机号是否存在
